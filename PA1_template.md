@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document: 
-    keep_md: true 
----
+# Reproducible Research: Peer Assessment 1
 
 For this analisys, the followed libraries are required
 
@@ -67,9 +62,11 @@ legend('topright',
        fill = c("red","blue"))
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
 
 ## What is the average daily activity pattern?
+
+This graph was made ignoring the missed values, the time series indicate the average of steps for each 5 minutes interval, the red point in the graph indicate the max steps count of a single interval in the all day.
 
 
 ```r
@@ -95,10 +92,34 @@ legend("topright",
        col = "red")
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 ## Imputing missing values
 
+This dataset has some missing values for the total of the 17568 records. How we can see, only the steps has missing values, the following code demonstrate the percentage of NA's for each variable.
 
+
+```r
+nasSummarie <- data.frame(
+    Missing.Amount = c(
+        sum(is.na(actDt$steps)),
+        sum(is.na(actDt$date)),
+        sum(is.na(actDt$interval))
+    ),
+    Missing.Percentage = c(
+        mean(is.na(actDt$steps)) * 100,
+        mean(is.na(actDt$date)) * 100,
+        mean(is.na(actDt$interval)) * 100
+    )
+)
+nasSummarie
+```
+
+```
+##   Missing.Amount Missing.Percentage
+## 1           2304           13.11475
+## 2              0            0.00000
+## 3              0            0.00000
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?

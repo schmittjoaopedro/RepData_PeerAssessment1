@@ -163,6 +163,7 @@ legend('topright',
 </div>
 <div id="what-is-the-average-daily-activity-pattern" class="section level2">
 <h2>What is the average daily activity pattern?</h2>
+<p>This graph was made ignoring the missed values, the time series indicate the average of steps for each 5 minutes interval, the red point in the graph indicate the max steps count of a single interval in the all day.</p>
 <pre class="r"><code>stepsPerInterval &lt;- actDt %&gt;%
     group_by(interval) %&gt;%
     summarise_each(funs(mean(steps, na.rm = T))) %&gt;%
@@ -187,6 +188,24 @@ legend(&quot;topright&quot;,
 </div>
 <div id="imputing-missing-values" class="section level2">
 <h2>Imputing missing values</h2>
+<p>This dataset has some missing values for the total of the 17568 records. How we can see, only the steps has missing values, the following code demonstrate the percentage of NA’s for each variable.</p>
+<pre class="r"><code>nasSummarie &lt;- data.frame(
+    Missing.Amount = c(
+        sum(is.na(actDt$steps)),
+        sum(is.na(actDt$date)),
+        sum(is.na(actDt$interval))
+    ),
+    Missing.Percentage = c(
+        mean(is.na(actDt$steps)) * 100,
+        mean(is.na(actDt$date)) * 100,
+        mean(is.na(actDt$interval)) * 100
+    )
+)
+nasSummarie</code></pre>
+<pre><code>##   Missing.Amount Missing.Percentage
+## 1           2304           13.11475
+## 2              0            0.00000
+## 3              0            0.00000</code></pre>
 </div>
 <div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>

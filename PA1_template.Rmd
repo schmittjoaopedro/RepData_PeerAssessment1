@@ -1,8 +1,8 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
 output: 
-  html_document:
-    keep_md: true
+  html_document: 
+    keep_md: true 
 ---
 
 For this analisys, the followed libraries are required
@@ -31,28 +31,52 @@ summary(actDt)
 
 ## The mean of the total number of steps taken per day
 
-For each day we group all measurements and sum all steps ignorign NA's values, after grouper 
-the values we make a histogram of the frequencies of days per steps. The mean of steps per day
-if in red and the median of steps per day is in blue.
+For each day we group all measurements and sum all steps ignorign NA's values, after grouper the values we make a histogram of the frequencies of days per steps. The mean of steps per day it in red and the median of steps per day it in blue.
 
 ```{r}
 stepsPerDay <- actDt %>% 
   group_by(date) %>% 
   summarise_each(funs(sum(steps, na.rm = T))) %>% 
   select(date, steps)
+
+stepsMean <- round(mean(stepsPerDay$steps, na.rm = T), 2)
+stepsMedian <- median(stepsPerDay$steps, na.rm = T)
 hist(stepsPerDay$steps, 
      xlab = "Steps per day",
      ylab = "Frequency",
      main = "Frequency of total steps per day.", 
      col = "gray")
-abline(v = mean(stepsPerDay$steps, na.rm = T), col = "red", lwd = 3)
-abline(v = median(stepsPerDay$steps, na.rm = T), col = "blue", lwd = 3)
-legend('topright', legend = c("Mean", "Median"), fill = c("red","blue"))
+abline(v = stepsMean, col = "red", lwd = 3)
+abline(v = stepsMedian, col = "blue", lwd = 3)
+legend('topright', 
+       legend = c(paste("Mean ", stepsMean), paste("Median ",stepsMedian)), 
+       fill = c("red","blue"))
 ```
 
 ## What is the average daily activity pattern?
 
+```{r}
+stepsPerInterval <- actDt %>%
+    group_by(interval) %>%
+    summarise_each(funs(mean(steps, na.rm = T))) %>%
+    as.data.frame()
 
+maxStepPerInterval <- stepsPerInterval[which.max(stepsPerInterval$steps),]
+
+plot(stepsPerInterval$interval, 
+     stepsPerInterval$steps, 
+     type = "l", 
+     xlab = "5 minutes interval", 
+     ylab = "Average steps", 
+     main = "Steps average per 5 minutes interval")
+points(maxStepPerInterval, col = "red", pch = 16)
+legend("topright", 
+       legend = paste("Max steps is ", round(maxStepPerInterval$steps, 2)), 
+       pch = 16, 
+       pt.bg = "red", 
+       bty = "n", 
+       col = "red")
+```
 
 ## Imputing missing values
 

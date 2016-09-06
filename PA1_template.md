@@ -5,6 +5,8 @@ output:
     keep_md: true 
 ---
 
+## Reproducible Research: Peer Assessment 1
+
 For this analisys, the followed libraries are required
 
 
@@ -16,14 +18,15 @@ library(dplyr)
 
 ## Loading and preprocessing the data
 
-First, checks if the activity.csv file exists, if the file does not exists, then
-unzip the activity.zip file, to finally load the activity.csv in the actDt variable.
-Then convert the column date that is as factor to the date format, and show a summary 
-about the data.
+First, checks if the activity.zip doesn't exist and then download it, then checks if the activity.csv file exists, if the file does not exists, then unzip the activity.zip file, to finally load the activity.csv in the actDt variable. Then convert the column date that is as factor to the date format, and show a summary about the data.
 
 
 
 ```r
+if(!file.exists("activity.zip")) {
+  download.file(destfile = "activity.zip", 
+    url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip")
+}
 if(!file.exists("activity.csv")) {
   unzip("activity.zip")
 }
@@ -196,7 +199,7 @@ The differecen between of two plots can be perceipt in the mean as now we have t
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-To compare the diferrence in measurements of the weekdays against the weekends we do two plots comparing the values. For this we did a new column to the dataset called weekday that store the factor *weekday* or *weekend*.
+To compare the diferrence in measurements of the weekdays against the weekends we do two plots comparing the values. For this we did a new column to the dataset called weekday that store the factor *weekday* or *weekend*. We use the function wday because in other regions of the world we can have problens with traductions.
 
 
 ```r

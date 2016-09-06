@@ -8,6 +8,8 @@ output:
 For this analisys, the followed libraries are required
 
 ```{r libraries,results="hide",message=FALSE}
+library(lubridate)
+library(lattice)
 library(dplyr)
 ```
 
@@ -100,4 +102,77 @@ nasSummarie <- data.frame(
 nasSummarie
 ```
 
+
+For this quantity of missing values, we will put the mean by period to fill the NA's. The follow code describes this process. After that a new summary of the filled dataset is showed.
+
+```{r}
+actDtTidy <- actDt
+meanInterval <- actDtTidy %>% 
+    group_by(interval) %>% 
+    summarise_each(funs(mean(steps, na.rm = T))) %>% 
+    as.data.frame()
+
+for(i in 1:nrow(actDtTidy)) {
+    if(is.na(actDtTidy$steps[i]))
+        actDtTidy$steps[i] <- (
+            meanInterval %>% 
+            filter(interval == actDtTidy$interval[i]) %>% 
+            select(steps))[[1]]
+}
+summary(actDtTidy)
+```
+
+Added new values to missing values, we constructed two histogram, like before, to compare the dataset with missing value against the dataset without missing values.
+
+```{r fig.height=4,fig.width=10}
+par(mfrow = c(1,2))
+
+plotHist <- function (dataset, title) {
+    stepsPerDay <- dataset %>% 
+      group_by(date) %>% 
+      summarise_each(funs(sum(steps, na.rm = T))) %>% 
+      select(date, steps)
+    
+    stepsMean <- round(mean(stepsPerDay$steps, na.rm = T), 2)
+    stepsMedian <- round(median(stepsPerDay$steps, na.rm = T), 2)
+    hist(stepsPerDay$steps, 
+         xlab = "Steps per day",
+         ylab = "Frequency",
+         main = title, 
+         col = "gray")
+    abline(v = stepsMean, col = "red", lwd = 4)
+    abline(v = stepsMedian, col = "blue", lwd = 2)
+    legend('topright', 
+           legend = c(paste("Mean ", stepsMean), paste("Median ",stepsMedian)), 
+           fill = c("red","blue"))
+}
+
+plotHist(actDt, "Frequency of total steps per day with NA's.")
+plotHist(actDtTidy, "Frequency of total steps per day without NA's.")
+```
+
+The differecen between of two plots can be perceipt in the mean as now we have the filled values then mean of the measurements is equals and the first column where the NA's values changed to other bars.
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+To compare the diferrence in measurements of the weekdays against the weekends we do two plots comparing the values. For this we did a new column to the dataset called weekday that store the factor *weekday* or *weekend*.
+
+```{r fig.height=8,fig.width=10}
+actDtTidy$weekday <- "weekday"
+actDtTidy[wday(actDtTidy$date) %in% c(1,7),]$weekday <- "weekend"
+actDtTidy$weekday <- as.factor(actDtTidy$weekday)
+
+dt <- actDtTidy %>% 
+    group_by(weekday, interval) %>% 
+    summarise_each(funs(mean(steps))) %>% 
+    as.data.frame()
+
+xyplot(steps ~ interval | weekday, 
+   data = dt, 
+   type = "l", 
+   layout = c(1,2),
+   xlab = "Interval",
+   ylab = "Number of steps",
+   main = "Difference in activity patterns between weekdays and weekends")
+```
+

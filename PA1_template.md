@@ -1,9 +1,16 @@
-# Reproducible Research: Peer Assessment 1
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document: 
+    keep_md: true 
+---
 
 For this analisys, the followed libraries are required
 
 
 ```r
+library(lubridate)
+library(lattice)
 library(dplyr)
 ```
 
@@ -62,7 +69,7 @@ legend('topright',
        fill = c("red","blue"))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
 
 ## What is the average daily activity pattern?
 
@@ -92,7 +99,7 @@ legend("topright",
        col = "red")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
 
 ## Imputing missing values
 
@@ -122,4 +129,94 @@ nasSummarie
 ## 3              0            0.00000
 ```
 
+
+For this quantity of missing values, we will put the mean by period to fill the NA's. The follow code describes this process. After that a new summary of the filled dataset is showed.
+
+
+```r
+actDtTidy <- actDt
+meanInterval <- actDtTidy %>% 
+    group_by(interval) %>% 
+    summarise_each(funs(mean(steps, na.rm = T))) %>% 
+    as.data.frame()
+
+for(i in 1:nrow(actDtTidy)) {
+    if(is.na(actDtTidy$steps[i]))
+        actDtTidy$steps[i] <- (
+            meanInterval %>% 
+            filter(interval == actDtTidy$interval[i]) %>% 
+            select(steps))[[1]]
+}
+summary(actDtTidy)
+```
+
+```
+##      steps             date               interval     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5  
+##  3rd Qu.: 27.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0
+```
+
+Added new values to missing values, we constructed two histogram, like before, to compare the dataset with missing value against the dataset without missing values.
+
+
+```r
+par(mfrow = c(1,2))
+
+plotHist <- function (dataset, title) {
+    stepsPerDay <- dataset %>% 
+      group_by(date) %>% 
+      summarise_each(funs(sum(steps, na.rm = T))) %>% 
+      select(date, steps)
+    
+    stepsMean <- round(mean(stepsPerDay$steps, na.rm = T), 2)
+    stepsMedian <- round(median(stepsPerDay$steps, na.rm = T), 2)
+    hist(stepsPerDay$steps, 
+         xlab = "Steps per day",
+         ylab = "Frequency",
+         main = title, 
+         col = "gray")
+    abline(v = stepsMean, col = "red", lwd = 4)
+    abline(v = stepsMedian, col = "blue", lwd = 2)
+    legend('topright', 
+           legend = c(paste("Mean ", stepsMean), paste("Median ",stepsMedian)), 
+           fill = c("red","blue"))
+}
+
+plotHist(actDt, "Frequency of total steps per day with NA's.")
+plotHist(actDtTidy, "Frequency of total steps per day without NA's.")
+```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+
+The differecen between of two plots can be perceipt in the mean as now we have the filled values then mean of the measurements is equals and the first column where the NA's values changed to other bars.
+
 ## Are there differences in activity patterns between weekdays and weekends?
+
+To compare the diferrence in measurements of the weekdays against the weekends we do two plots comparing the values. For this we did a new column to the dataset called weekday that store the factor *weekday* or *weekend*.
+
+
+```r
+actDtTidy$weekday <- "weekday"
+actDtTidy[wday(actDtTidy$date) %in% c(1,7),]$weekday <- "weekend"
+actDtTidy$weekday <- as.factor(actDtTidy$weekday)
+
+dt <- actDtTidy %>% 
+    group_by(weekday, interval) %>% 
+    summarise_each(funs(mean(steps))) %>% 
+    as.data.frame()
+
+xyplot(steps ~ interval | weekday, 
+   data = dt, 
+   type = "l", 
+   layout = c(1,2),
+   xlab = "Interval",
+   ylab = "Number of steps",
+   main = "Difference in activity patterns between weekdays and weekends")
+```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
+
